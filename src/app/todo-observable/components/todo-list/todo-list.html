@@ -1,0 +1,50 @@
+<mat-grid-list cols="6" rowHeight="1:4" style="height: 100%">
+  <button matButton="tonal" (click)="allTodos()" [routerLink]="['/observable/todo/list']" [replaceUrl]="true" style="margin-inline-end: 1rem">Reset Todos</button>
+  <button matButton="tonal" [disabled]="!selectedUser?.id" (click)="addTodo()" [routerLink]="['/observable/todo/list', selectedUser?.id]" [replaceUrl]="true">Add Todos</button>
+  <br />
+  <br />
+  <mat-grid-tile style="overflow: auto; padding-top: 1rem">
+    @if (isUsersLoading$ | async) {
+      <mat-spinner></mat-spinner>
+    } @else if (usersError$ | async) {
+      {{(usersError$ | async).message}}
+    } @else {
+      <mat-nav-list class="users">
+        @for (user of userList$ | async; track user.id; let last = $last) {
+          <mat-list-item (click)="updateSelectUser(user)" [routerLink]="['/observable/todo/list', user.id]" [replaceUrl]="true"
+                         [ngClass]="{'active': selectedUser?.id === user.id}">{{`${user.firstName} ${user.lastName}`}}</mat-list-item>
+          @if (!last) {
+            <mat-divider></mat-divider>
+          }
+        } @empty {
+          ...
+        }
+      </mat-nav-list>
+    }
+  </mat-grid-tile>
+  <mat-grid-tile colspan="3" style="overflow: auto; padding-top: 1rem">
+    @if (isTodosLoading$ | async) {
+      <mat-spinner></mat-spinner>
+    } @else if (todosError$ | async) {
+      {{(todosError$ | async).message}}
+    } @else {
+      <mat-list class="list-todos">
+        @for (todo of todos$ | async; track todo.id) {
+          <mat-list-item [lines]="3">
+            <span matListItemLine>{{todo.completed ? 'completed' : 'pending'}}</span>
+            <span matListItemTitle>{{todo.todo}}</span>
+            @if (!todo.completed) {
+              <button matButton (click)="completeTodo(todo)">complete</button>
+            }
+            <button matButton (click)="deleteTodo(todo)">delete</button>
+          </mat-list-item>
+          @if (!$last) {
+            <mat-divider></mat-divider>
+          }
+        } @empty {
+          Not Have Todos
+        }
+      </mat-list>
+    }
+  </mat-grid-tile>
+</mat-grid-list>
